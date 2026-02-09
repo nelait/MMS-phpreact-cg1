@@ -1,73 +1,38 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AddProduct = () => {
-  const [product, setProduct] = useState({
-    name: '',
-    sku: '',
-    description: '',
-    price: '',
-    quantity: '',
-    category_id: '',
-  });
+  const [formData, setFormData] = useState({ name: '', sku: '', price: '', quantity: '', reorder_level: '', weight: '', dimensions: '', image: null });
+  const navigate = useNavigate();
 
-  const handleAddProduct = async (e) => {
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData({ ...formData, [name]: files ? files[0] : value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post('/api/products', product);
-      // Redirect or show success message
-    } catch (error) {
-      console.error('Error adding product:', error);
+    const form = new FormData();
+    for (const key in formData) {
+      form.append(key, formData[key]);
     }
+    await axios.post('/api/products', form);
+    navigate('/products');
   };
 
   return (
-    <div>
-      <h1>Add Product</h1>
-      <form onSubmit={handleAddProduct}>
-        <input
-          type='text'
-          value={product.name}
-          onChange={(e) => setProduct({ ...product, name: e.target.value })}
-          placeholder='Product Name'
-          required
-        />
-        <input
-          type='text'
-          value={product.sku}
-          onChange={(e) => setProduct({ ...product, sku: e.target.value })}
-          placeholder='SKU'
-          required
-        />
-        <textarea
-          value={product.description}
-          onChange={(e) => setProduct({ ...product, description: e.target.value })}
-          placeholder='Description'
-        />
-        <input
-          type='number'
-          value={product.price}
-          onChange={(e) => setProduct({ ...product, price: e.target.value })}
-          placeholder='Price'
-          required
-        />
-        <input
-          type='number'
-          value={product.quantity}
-          onChange={(e) => setProduct({ ...product, quantity: e.target.value })}
-          placeholder='Quantity'
-          required
-        />
-        <select
-          value={product.category_id}
-          onChange={(e) => setProduct({ ...product, category_id: e.target.value })}
-        >
-          <option value=''>Select Category</option>
-          {/* Categories should be fetched from an API */}
-        </select>
-        <button type='submit'>Add Product</button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type='text' name='name' onChange={handleChange} placeholder='Product Name' required />
+      <input type='text' name='sku' onChange={handleChange} placeholder='SKU' required />
+      <input type='number' name='price' onChange={handleChange} placeholder='Price' required />
+      <input type='number' name='quantity' onChange={handleChange} placeholder='Quantity' required />
+      <input type='number' name='reorder_level' onChange={handleChange} placeholder='Reorder Level' />
+      <input type='number' name='weight' onChange={handleChange} placeholder='Weight' />
+      <input type='text' name='dimensions' onChange={handleChange} placeholder='Dimensions' />
+      <input type='file' name='image' onChange={handleChange} />
+      <button type='submit'>Add Product</button>
+    </form>
   );
 };
 
