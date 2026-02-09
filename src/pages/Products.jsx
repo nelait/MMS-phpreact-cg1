@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -7,56 +8,24 @@ const Products = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      try {
-        const response = await axios.get('/api/products');
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
+      const response = await axios.get('/api/products', { params: { search } });
+      setProducts(response.data);
     };
     fetchProducts();
-  }, []);
-
-  const handleDeleteProduct = async (id) => {
-    try {
-      await axios.delete(`/api/products/${id}`);
-      setProducts(products.filter((product) => product.id !== id));
-    } catch (error) {
-      console.error('Error deleting product:', error);
-    }
-  };
+  }, [search]);
 
   return (
     <div>
-      <h1>Products</h1>
-      <input
-        type='text'
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder='Search products...'
-      />
-      <table>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>SKU</th>
-            <th>Price</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.filter((product) => product.name.includes(search)).map((product) => (
-            <tr key={product.id}>
-              <td>{product.name}</td>
-              <td>{product.sku}</td>
-              <td>{product.price}</td>
-              <td>
-                <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h1>📦 Products</h1>
+      <input type='text' value={search} onChange={e => setSearch(e.target.value)} placeholder='Search products...' />
+      <Link to='/add-product'>+ Add Product</Link>
+      <ul>
+        {products.map(product => (
+          <li key={product.id}>
+            {product.name} - {product.price} <Link to={`/edit-product/${product.id}`}>Edit</Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
